@@ -11,17 +11,15 @@ import os
 import socket
 
 
-class WayneAdvisoryEngine:
+class WayneAdvisory:
 
     def __init__(self, authorized_assets_file="wayne_secure_baseline.json"):
         self.authorized_assets_file = authorized_assets_file
         self.authorized_macs = self.load_secure_baseline()
 
     def detect_network_perimeter(self):
-        """Automatically detects the local IP network without admin needs."""
         try:
             s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-            # Connecting to a public IP doesn't send data but resolves our local IP
             s.connect(("8.8.8.8", 80))
             local_ip = s.getsockname()[0]
             s.close()
@@ -30,7 +28,6 @@ class WayneAdvisoryEngine:
             return "192.168.1.0/24"
 
     def load_secure_baseline(self):
-        """Loads verified device profiles from a local JSON file."""
         if os.path.exists(self.authorized_assets_file):
             try:
                 with open(self.authorized_assets_file, "r") as f:
@@ -41,35 +38,30 @@ class WayneAdvisoryEngine:
         return set()
 
     def save_secure_baseline(self, mac_list):
-        """Saves current simulated devices into the baseline file."""
         with open(self.authorized_assets_file, "w") as f:
             json.dump(list(mac_list), f, indent=4)
         self.authorized_macs = set(mac_list)
         print(f"\n[+] Baseline successfully updated with {len(mac_list)} assets.")
 
     def run_perimeter_discovery(self, ip_range):
-        """Simulates host discovery securely using local standard sockets."""
         print(f"\n[*] Sweeping perimeter coordinates: {ip_range}...")
         base_net = ".".join(ip_range.split(".")[:-1])
 
-        # Generate a simulated list of active hosts to avoid hanging environments
         simulated_hosts = [f"{base_net}.1", f"{base_net}.15", f"{base_net}.102"]
         return simulated_hosts
 
     def execute_component_audit(self, target_ip):
-        """Performs a safe, non-admin connection test to common ports."""
-        # Common web/IoT management interface ports
+      
         critical_ports = [80, 443, 8080]
         vulnerabilities = []
 
         for port in critical_ports:
-            # Using a brief timeout ensures the app stays snappy and fast
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             s.settimeout(0.5)
             result = s.connect_ex((target_ip, port))
             s.close()
 
-            if result == 0:  # Port is open
+            if result == 0: 
                 risk = "Medium - Interface Exposed"
                 if port == 80:
                     risk = "HIGH - Unencrypted Administration Interface Open"
@@ -83,7 +75,6 @@ class WayneAdvisoryEngine:
         return vulnerabilities
 
     def generate_executive_brief(self, ip_range):
-        """Compiles clean technical maps into a boardroom-ready report."""
         hosts = self.run_perimeter_discovery(ip_range)
 
         print("\n" + "=" * 85)
@@ -95,7 +86,6 @@ class WayneAdvisoryEngine:
         print(f"{'IP Address':<15} {'MAC Address':<19} {'Security Integrity'}")
         print("-" * 85)
 
-        # Mocking device info safely without root/nmap
         mock_macs = ["00:1A:2B:3C:4D:5E", "00:1A:2B:3C:4D:6F", "UNKNOWN"]
         anomalous_targets = []
 
@@ -132,12 +122,12 @@ class WayneAdvisoryEngine:
 
 
 def operational_terminal():
-    engine = WayneAdvisoryEngine()
+    engine = WayneAdvisory()
 
     print("=" * 60)
     print("         WAYNE ADVISORY - PRIVATE OPERATIONAL TERMINAL       ")
     print("=" * 60)
-    print("[+] Light-weight environment environment configuration active.")
+    print("[+] Light-weight environment configuration active.")
 
     default_subnet = engine.detect_network_perimeter()
     target_network = input(f"\nEnter network perimeter [{default_subnet}]: ").strip()
